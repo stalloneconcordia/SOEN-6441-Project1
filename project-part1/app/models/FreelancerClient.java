@@ -219,6 +219,16 @@ public class FreelancerClient {
                     },4000);    
                     }
     
+    
+    public Map<String, Integer> getProjectStats(String prev_desc){
+        List <String> list = Stream.of(prev_desc).map(w -> w.split("\\s+")).flatMap(Arrays::stream)
+                .collect(Collectors.toList());
+        Map <String, Integer > wordCounter = list.stream()
+                .collect(Collectors.toMap(w -> w.toLowerCase(), w -> 1, Integer::sum));
+        return wordCounter;
+    }
+
+
     public CompletionStage<GlobalStats> getGlobalStats(String searchkeyword){
             WSRequest req = client.url(baseURL+"/projects/0.1/projects/active");
             return req

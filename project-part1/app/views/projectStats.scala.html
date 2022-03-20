@@ -1,0 +1,14 @@
+@import models.SearchResult
+@import java.util
+@(SearchResult: util.Map[String, Integer])
+
+
+@main("FreeLancelot") {
+
+        <article class="text-center" style="margin-top:50px;">
+            <div>
+                <p>@SearchResult</p>
+            </div>
+        </article>
+
+}

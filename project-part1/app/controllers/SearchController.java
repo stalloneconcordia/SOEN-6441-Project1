@@ -102,5 +102,9 @@ public class SearchController extends Controller {
         return answer.thenApplyAsync(o -> ok(views.html.projectsWithSkills.render("Search term",o)));
     }
 
-
+    public Result projectStats(String prev_desc){
+        Map<String,Integer> temp;
+        temp = freelancer.getProjectStats(prev_desc);
+        return ok(views.html.projectStats.render(temp));
+    }
 }
