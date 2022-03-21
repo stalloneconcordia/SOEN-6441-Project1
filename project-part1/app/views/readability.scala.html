@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+@import models.SearchResult
+@import java.util
+@(SearchResult: util.Map[String, Float])
+
+
+@main("FreeLancelot") {
+
+<article class="text-center" style="margin-top:50px;">
+    <p>INDEX STATISTICS</p>
+    @for((searchTerms, searchResultlist) <- SearchResult){
+
+    <p><b>@searchTerms:</b> @searchResultlist</p>
+    }
+</article>
+
+}
