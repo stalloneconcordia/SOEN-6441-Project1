@@ -49,7 +49,13 @@ public class FreelancerClient {
         this.baseURL = config.getString("freelancer.url");
     }
 
-
+    /**
+     * @author Saumya,Stallone,Esha,Swapnil
+     * @param query takes String query as an arguement
+     * @return searchResult
+     * @throws JsonGenerationException
+     * @throws JsonMappingException
+     */
     public CompletionStage<SearchResult> searchProjects(String query) throws JsonGenerationException, JsonMappingException  {
 //    	https://www.freelancer.com/api/projects/0.1/projects/active/?query=
         String freelancerQuery = query;
@@ -144,6 +150,14 @@ public class FreelancerClient {
         },4000);
     }
 
+    /**
+     * Gets the profile of an owner
+     * @author Saumya,Stallone, Swapnil, Esha
+     * @param owner_id takes owner id as an arguement
+     * @return liSearch
+     * @throws JsonGenerationException
+     * @throws JsonMappingException
+     */
     public CompletionStage<List<SearchProfile>> getOwnerProfile (String owner_id) throws JsonGenerationException, JsonMappingException {
         SearchProfile searchProfile = new SearchProfile();
         ProfileInformation profileInformation = new ProfileInformation();
@@ -331,7 +345,13 @@ public class FreelancerClient {
                     });
         }
 
-         public HashMap<String,Float> getReadabilityIndex (String prev_desc){
+    /**
+     * Counts the readability index
+     * @author Saumya
+     * @param prev_desc takes preview decripstion as an arguement
+     * @return  An hashmap with the result
+     */
+    public HashMap<String,Float> getReadabilityIndex (String prev_desc){
         HashMap<String,Float> fdata = new HashMap<String,Float>();
         List<String> prev_desc_list = new ArrayList<>();
         prev_desc_list.add(prev_desc);
@@ -364,6 +384,10 @@ public class FreelancerClient {
         }
     }
 
+    /**this method takes a word as an arguement and counts the syllables
+     * @param word takes a string as an arguement
+     * @return it returns the number of syllables
+     */
     public static int countSyllables(final String word) {
         return Math.max(1, word.toLowerCase()
                 .replaceAll("e$", "")
