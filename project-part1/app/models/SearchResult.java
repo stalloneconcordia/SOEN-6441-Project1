@@ -1,65 +1,57 @@
 package models;
-/**
-        * @author Stallone Mecwan
-        * @version 1: Stallone Mecwan implements the project framework, search, and topic feature.
-        * The SearchResult class to hold the search results from GitHub
- */
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSetter;
+
+// import akka.http.javadsl.model.headers.Date;
 import models.Projects;
 import java.util.List;
+
+
 public class SearchResult {
 
-        private String input;
-        private List<Projects> projects;
+    private String input;
+    private List<Projects> projects;
+    //    private String
+    private float index;
+    private float level;
+    public SearchResult() {
+        System.out.println("inside non para contsr.");
+    }
 
-        /**
-        * The empty constructor for Json
-        *
-        * @author Stallone Mecwan
-        */
-        public SearchResult() {
+    public float getIndex() {
+        return index;
+    }
 
-        }
+    public void setIndex(float index) {
+        this.index = index;
+    }
 
-        /**
-         * Returns the input query
-         *
-         * @return the input query
-         * @author Stallone Mecwan
-         */
-        public String getInput() {
-            return input;
-        }
+    public float getLevel() {
+        return level;
+    }
 
-        /**
-         * Set the input query
-         *
-         * @param input input query
-         * @author Stallone Mecwan
-         */
-        public void setInput(String input) {
-            this.input = input;
-        }
+    public void setLevel(float level) {
+        this.level = level;
+    }
 
-        /**
-         * Return the list of projects
-         *
-         * @return the projects list
-         * @author Stallone Mecwan
-         */
-        public List<Projects> getProjects() {
-            return projects;
-        }
+    public String getInput() {
+        return input;
+    }
 
-        /**
-         * Set the projects list
-         *
-         * @param projects the repositories list
-         * @author Stallone Mecwan
-         */
-        public void setProjects(List<Projects> projects) {
-            System.out.println("In set repositories");
-            this.projects = projects;
-        }
+    public void setInput(String input) {
+        this.input = input;
+    }
+
+
+    public List<Projects> getProjects() {
+        return projects;
+    }
+
+
+    //    @JsonSetter("projects")
+    public void setProjects(List<Projects> projects) {
+        System.out.println("In set repositories");
+        this.projects = projects;
+    }
 }
-
-
