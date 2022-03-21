@@ -149,7 +149,14 @@ public class SearchController extends Controller {
         return ok(views.html.projectStats.render(temp));
     }
 
+/**
+ * Controller Method for api: /readability/:prev_desc
+ * displays the readability index  from preview description
+ * @author Saumya
+ * @param prev_desc Preview desrciption as an arguement
+ * @return  result
 
+ */
    public Result readability(String prev_desc) throws JsonGenerationException, JsonMappingException{
         HashMap<String,Float> fdata = freelancer.getReadabilityIndex(prev_desc);
         return ok(views.html.readability.render(fdata));
