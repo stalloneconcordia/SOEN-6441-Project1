@@ -30,6 +30,15 @@ public class Projects{
     public Projects(){
 
     }
+
+    public Projects(String owner, String title, String prev_description,String type, String date, HashMap<String,Integer> skills){
+        this.owner = owner;
+        this.title = title;
+        this.prev_description = prev_description;
+        this.type = type;
+        this.date = date;
+        this.skills = skills;
+    }
     /**
      * The getter of Owner
      * @author Stallone Mecwan

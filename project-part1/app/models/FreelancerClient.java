@@ -302,7 +302,11 @@ public class FreelancerClient {
                 .collect(Collectors.toList());
         Map <String, Integer > wordCounter = list.stream()
                 .collect(Collectors.toMap(w -> w.toLowerCase(), w -> 1, Integer::sum));
-        return wordCounter;
+        Map<String, Integer> temp = new LinkedHashMap<>();
+                      wordCounter.entrySet().stream()
+                              .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
+                              .forEachOrdered(x -> temp.put(x.getKey(), x.getValue()));
+        return temp;
     }
 
     /**
