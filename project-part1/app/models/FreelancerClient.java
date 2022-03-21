@@ -27,16 +27,21 @@ import play.libs.ws.WSResponse;
 import java.util.stream.Stream;
 import java.util.stream.Collectors;
 
-
+/**
+ * Class FreelancerClient
+ * @author Saumya,Stallone,Esha,Swapnil
+ * The FreelancerClient class, to hold the content for a Freelancer client
+ */
 public class FreelancerClient {
+    /** The WSClient client */
     private final WSClient client;
-    /**
-     * The String baseURL
-     */
+
+    /** The String baseURL*/
     private final String baseURL;
 
     private final AsyncCacheApi cache;
 
+    /** The Constructor*/
     @Inject
     public FreelancerClient(WSClient client, AsyncCacheApi cache, Config config) {
         this.client = client;
@@ -44,12 +49,18 @@ public class FreelancerClient {
         this.baseURL = config.getString("freelancer.url");
     }
 
-    public CompletionStage<SearchResult> searchRepositories(String query) throws JsonGenerationException, JsonMappingException {
-//    	https://www.freelancer.com/api/projects/0.1/projects/active/?query=
+    /**
+     * The method searchRepositories, to search the repositories based on the given query and whether it's a topic
+     * @author Swapnil,Stallone,Esha,Saumya
+     * @param query the given query
+     * @return the search results
+     */
+    public CompletionStage<SearchResult> searchProjects(String query) throws JsonGenerationException, JsonMappingException {
+//      https://www.freelancer.com/api/projects/0.1/projects/active/?query=
         String freelancerQuery = query;
         return cache.getOrElseUpdate("search://" + freelancerQuery, () -> {
             WSRequest req = client.url(baseURL + "/projects/0.1/projects/active");
-//			System.out.println(Json.fromJson((req.addQueryParameter("query", freelancerQuery).get()).asJson(), SearchResult.class));
+//          System.out.println(Json.fromJson((req.addQueryParameter("query", freelancerQuery).get()).asJson(), SearchResult.class));
             return req
                     .addHeader("freelancelotESAPP", "UzhSBUrlZiSK4o8yQ8CA8ZyJ36VRvh")
                     .addQueryParameter("query", freelancerQuery)
@@ -100,6 +111,12 @@ public class FreelancerClient {
         }, 4000);
     }
 
+    /**
+     * The method getOwnerProfile, to get the Owner Profile details for a given owner id
+     * @author Esha
+     * @param owner_id takes owner id as an arguement
+     * @return the liSearch
+     */
     public CompletionStage<List<SearchProfile>> getOwnerProfile (String owner_id) throws JsonGenerationException, JsonMappingException {
         SearchProfile searchProfile = new SearchProfile();
         ProfileInformation profileInformation = new ProfileInformation();
@@ -167,6 +184,14 @@ public class FreelancerClient {
 
 
     }
+
+    /**
+     *displays the projects for a given skill
+     * @author Stallone
+     * @param id Takes id as an arguement
+     * @param skill Takes skill as an arguement
+     * @return searchResult
+     */
     public CompletionStage<SearchResult> projectsIncludingSkill(String id, String skill){
         return cache.getOrElseUpdate("search://"+skill,()->{
             WSRequest req = client.url(baseURL+"/projects/0.1/projects/active");
@@ -218,8 +243,13 @@ public class FreelancerClient {
                        } );
                     },4000);    
                     }
-    
-    
+
+    /**
+     * displays the statistics from preview description of a particular project
+     * @author Stallone,Saumya,Swapnil,Esha
+     * @param prev_desc takes preview description as an arguement
+     * @return  wordCounter
+     */
     public Map<String, Integer> getProjectStats(String prev_desc){
         List <String> list = Stream.of(prev_desc).map(w -> w.split("\\s+")).flatMap(Arrays::stream)
                 .collect(Collectors.toList());
@@ -228,7 +258,12 @@ public class FreelancerClient {
         return wordCounter;
     }
 
-
+    /**
+     * displays the preview description stats like word count
+     * @author Swapnil
+     * @param searchkeyword takes a keyword as an arguement
+     * @return  globalStats
+     */
     public CompletionStage<GlobalStats> getGlobalStats(String searchkeyword){
             WSRequest req = client.url(baseURL+"/projects/0.1/projects/active");
             return req

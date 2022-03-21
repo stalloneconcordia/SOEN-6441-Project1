@@ -32,31 +32,33 @@ public class Projects{
     }
     /**
      * The getter of Owner
-     *
      * @author Stallone Mecwan
+     * @return owner
+     
      */
     public String getOwner() {
         return owner;
     }
+
     /**
      * The getter of Seo_url
-     *
      * @author Stallone Mecwan
+     * @return seo_url
      */
     public String getSeo_url(){
         return seo_url;
     }
     /**
      * The setter of Seo_url
-     *
      * @author Stallone Mecwan
+     * @param seo_url setter for seo url
      */
     public void setSeo_url(String seo_url){this.seo_url = seo_url; }
 
     /**
      * The setter of Skills
-     *
      * @author Stallone Mecwan
+     * @param skills setter for set skills
      */
     public void setSkills(HashMap<String,Integer> skills){
 
@@ -65,8 +67,8 @@ public class Projects{
 
     /**
      * The setter of  Owner
-     *
      * @author Stallone Mecwan
+     * @param owner setter for owner
      */
     public void setOwner(String owner) {
         this.owner = owner;
@@ -74,8 +76,8 @@ public class Projects{
 
     /**
      * The getter of Date
-     *
      * @author Stallone Mecwan
+     * @return date
      */
     public String getDate() {
         return date;
@@ -83,8 +85,8 @@ public class Projects{
 
     /**
      * The setter of Date
-     *
      * @author Stallone Mecwan
+     * @param date setter for date
      */
     public void setDate(String date) {
         this.date = date;
@@ -92,8 +94,8 @@ public class Projects{
 
     /**
      * The getter of Title
-     *
      * @author Stallone Mecwan
+     * @return title
      */
     public String getTitle() {
         return title;
@@ -101,8 +103,8 @@ public class Projects{
 
     /**
      * The setter of Title
-     *
      * @author Stallone Mecwan
+     * @param title setter for title
      */
     public void setTitle(String title) {
         this.title = title;
@@ -110,8 +112,8 @@ public class Projects{
 
     /**
      * The getter of Type
-     *
      * @author Stallone Mecwan
+     * @return type
      */
     public String getType() {
         return type;
@@ -119,8 +121,8 @@ public class Projects{
 
     /**
      * The setter of Type
-     *
      * @author Stallone Mecwan
+     * @param type
      */
     public void setType(String type) {
         this.type = type;
@@ -128,8 +130,8 @@ public class Projects{
 
     /**
      * The getter of Skills
-     *
      * @author Stallone Mecwan
+     * @return skills
      */
     public HashMap<String,Integer> getSkills() {
         return skills;
@@ -137,8 +139,8 @@ public class Projects{
 
     /**
      * The setter of Preview Description
-     *
      * @author Stallone Mecwan
+     * @param prevDesc setter for preview description
      */
     public void setPrevDesc(String prevDesc) {
         this.prev_description = prevDesc;
@@ -146,8 +148,8 @@ public class Projects{
 
     /**
      * The getter of Preview Description
-     *
      * @author Stallone Mecwan
+     * @return prev_description
      */
     public String getPrevDesc() {
         return prev_description;
