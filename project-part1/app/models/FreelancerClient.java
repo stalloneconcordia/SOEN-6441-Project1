@@ -61,15 +61,20 @@ public class FreelancerClient {
                     .addQueryParameter("query",freelancerQuery)
                     .addQueryParameter("compact","false")
                     .addQueryParameter("job_details","true")
-                    .addQueryParameter("limit","10")
+                    .addQueryParameter("limit","250")
                     .get()
                     .thenApplyAsync(WSResponse::asJson)
                     .thenApplyAsync(r-> {
                         ArrayList<Projects> projectsList = new ArrayList<>();
                         List<String> descriptionList = new ArrayList<>();
 //                        System.out.println("r is here" + r);
-                        int f = 0;
-                        while (r.get("result").get("projects").get(f) != null) {
+                        int f = 10;
+                        for(int i= 0;i<=250;i++){
+
+                            descriptionList.add(r.get("result").get("projects").get(f).get("preview_description").asText().replaceAll("\\p{Punct}", ""));
+                        }
+                        while (f>0) {
+                            System.out.println("Hello");
 //                            System.out.println("new job " +  r.get("result").get("projects").get(f).get("jobs").asText().getClass().getSimpleName());
                             Projects project = new Projects();
                             JsonNode  skills = r.get("result").get("projects").get(f).get("jobs");
@@ -83,6 +88,7 @@ public class FreelancerClient {
                                 else{
                                     skillsData.put(skillName,id);
                                 }
+
 
                             }
                             project.setSkills(skillsData);
@@ -98,7 +104,7 @@ public class FreelancerClient {
                             project.setType(r.get("result").get("projects").get(f).get("type").asText());
                             descriptionList.add(r.get("result").get("projects").get(f).get("preview_description").asText().replaceAll("\\p{Punct}", ""));
                             projectsList.add(project);
-                            f++;
+                            f--;
                         }
                         System.out.println("below description list: ");
                         System.out.println(descriptionList);
