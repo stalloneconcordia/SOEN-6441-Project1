@@ -50,7 +50,7 @@ public class FreelancerClient {
     }
 
 
-    public CompletionStage<SearchResult> searchRepositories(String query) throws JsonGenerationException, JsonMappingException  {
+    public CompletionStage<SearchResult> searchProjects(String query) throws JsonGenerationException, JsonMappingException  {
 //    	https://www.freelancer.com/api/projects/0.1/projects/active/?query=
         String freelancerQuery = query;
         return cache.getOrElseUpdate("search://"+freelancerQuery,()->{
@@ -330,6 +330,49 @@ public class FreelancerClient {
             
                     });
         }
+
+         public HashMap<String,Float> getReadabilityIndex (String prev_desc){
+        HashMap<String,Float> fdata = new HashMap<String,Float>();
+        List<String> prev_desc_list = new ArrayList<>();
+        prev_desc_list.add(prev_desc);
+        long total_words = prev_desc_list.stream()
+                .map(w -> w.replaceAll("\\p{Punct}", "").split(" "))
+                .flatMap(Arrays::stream)
+                .count();
+
+        long total_sentences = prev_desc_list.stream()
+                .map(w -> w.split("[!?.:]+"))
+                .flatMap(Arrays::stream)
+                .count();
+        int total_syllables = countSyllables(prev_desc_list.get(0));
+        if (total_sentences > 0 && total_words > 0 && total_syllables > 0) {
+            double FRI = (206.835 - 84.6)*((double)total_syllables/(double)total_words) - 1.015 * ((double)total_words/(double)total_sentences);
+            float FRI_value = (float)(FRI);
+            fdata.put("Flesch Readability Index",FRI_value);
+            double FREL = 0.39*((double)total_words/(double)total_sentences) + 11.8*((double)total_syllables/(double)total_words) - 15.59;
+
+            float FREL_value = (float)(FREL);
+            fdata.put("Flesch Readability Education Level",FREL_value);
+            return fdata;
+        }
+        else{
+            float FRI_Value = 0;
+            float FREL_Value = 0;
+            fdata.put("Flesch Readability Index",FRI_Value);
+            fdata.put("Flesch Readability Education Level",FREL_Value);
+            return fdata;
+        }
+    }
+
+    public static int countSyllables(final String word) {
+        return Math.max(1, word.toLowerCase()
+                .replaceAll("e$", "")
+                .replaceAll("[aeiouy]{2}", "a")
+                .replaceAll("[aeiouy]{2}", "a")
+                .replaceAll("[^aeiouy]", "")
+                .length());
+    }
+
 
 }
 
