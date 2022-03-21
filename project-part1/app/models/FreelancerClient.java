@@ -44,37 +44,39 @@ public class FreelancerClient {
         this.baseURL = config.getString("freelancer.url");
     }
 
-    public CompletionStage<SearchResult> searchRepositories(String query) throws JsonGenerationException, JsonMappingException {
+
+    public CompletionStage<SearchResult> searchRepositories(String query) throws JsonGenerationException, JsonMappingException  {
 //    	https://www.freelancer.com/api/projects/0.1/projects/active/?query=
         String freelancerQuery = query;
-        return cache.getOrElseUpdate("search://" + freelancerQuery, () -> {
-            WSRequest req = client.url(baseURL + "/projects/0.1/projects/active");
+        return cache.getOrElseUpdate("search://"+freelancerQuery,()->{
+            WSRequest req = client.url(baseURL+"/projects/0.1/projects/active");
 //			System.out.println(Json.fromJson((req.addQueryParameter("query", freelancerQuery).get()).asJson(), SearchResult.class));
             return req
-                    .addHeader("freelancelotESAPP", "UzhSBUrlZiSK4o8yQ8CA8ZyJ36VRvh")
-                    .addQueryParameter("query", freelancerQuery)
-                    .addQueryParameter("compact", "false")
-                    .addQueryParameter("job_details", "true")
-                    .addQueryParameter("limit", "10")
+                    .addHeader("freelancelotESAPP","UzhSBUrlZiSK4o8yQ8CA8ZyJ36VRvh")
+                    .addQueryParameter("query",freelancerQuery)
+                    .addQueryParameter("compact","false")
+                    .addQueryParameter("job_details","true")
+                    .addQueryParameter("limit","10")
                     .get()
                     .thenApplyAsync(WSResponse::asJson)
-                    .thenApplyAsync(r -> {
+                    .thenApplyAsync(r-> {
                         ArrayList<Projects> projectsList = new ArrayList<>();
+                        List<String> descriptionList = new ArrayList<>();
 //                        System.out.println("r is here" + r);
                         int f = 0;
                         while (r.get("result").get("projects").get(f) != null) {
 //                            System.out.println("new job " +  r.get("result").get("projects").get(f).get("jobs").asText().getClass().getSimpleName());
                             Projects project = new Projects();
-                            JsonNode skills = r.get("result").get("projects").get(f).get("jobs");
-                            ;
-                            HashMap<String, Integer> skillsData = new HashMap<>();
-                            for (int i = 0; i < skills.size(); i++) {
+                            JsonNode  skills = r.get("result").get("projects").get(f).get("jobs");
+                            HashMap<String,Integer> skillsData = new HashMap<>();
+                            for(int i = 0 ; i<skills.size() ; i++){
                                 int id = skills.get(i).get("id").asInt();
                                 String skillName = skills.get(i).get("name").asText();
-                                if (skillsData.containsKey(id)) {
+                                if(skillsData.containsKey(id)){
                                     continue;
-                                } else {
-                                    skillsData.put(skillName, id);
+                                }
+                                else{
+                                    skillsData.put(skillName,id);
                                 }
 
                             }
@@ -89,16 +91,54 @@ public class FreelancerClient {
                             project.setDate(simple.format(date));
                             project.setSeo_url(r.get("result").get("projects").get(f).get("seo_url").asText());
                             project.setType(r.get("result").get("projects").get(f).get("type").asText());
+                            descriptionList.add(r.get("result").get("projects").get(f).get("preview_description").asText().replaceAll("\\p{Punct}", ""));
                             projectsList.add(project);
                             f++;
                         }
+                        System.out.println("below description list: ");
+                        System.out.println(descriptionList);
                         SearchResult searchResult = new SearchResult();
                         searchResult.setInput(query);
                         searchResult.setProjects(projectsList);
+//                        List<String> prev_desc_list = new ArrayList<>();
+//                        prev_desc_list.add(prev_desc);
+                        long total_words = descriptionList.stream()
+                                .map(w -> w.replaceAll("\\p{Punct}", "").split(" "))
+                                .flatMap(Arrays::stream)
+                                .count();
+
+                        long total_sentences = descriptionList.stream()
+                                .map(w -> w.split("[!?.:]+"))
+                                .flatMap(Arrays::stream)
+                                .count();
+                        int total_syllables = 0;
+                        for(int i = 0; i< descriptionList.size();i++){
+                            total_syllables = total_syllables + countSyllables(descriptionList.get(i));
+                        }
+//                        int total_syllables = countSyllables(prev_desc_list.get(0));
+                        if (total_sentences > 0 && total_words > 0 && total_syllables > 0) {
+                            double FRI = (206.835 - 84.6)*((double)total_syllables/(double)total_words) - 1.015 * ((double)total_words/(double)total_sentences);
+                            float FRI_value = (float)(FRI);
+                            searchResult.setIndex(FRI_value);
+                            double FREL = 0.39*((double)total_words/(double)total_sentences) + 11.8*((double)total_syllables/(double)total_words) - 15.59;
+
+                            float FREL_value = (float)(FREL);
+                            searchResult.setLevel(FREL_value);
+//                            return fdata;
+                        }
+                        else{
+                            float FRI_value = 0;
+                            float FREL_value = 0;
+                            searchResult.setIndex(FRI_value);
+                            searchResult.setLevel(FREL_value);
+//                            return fdata;
+                        }
                         return searchResult;
-                    });
-        }, 4000);
+//
+                    } );
+        },4000);
     }
+
 
     public CompletionStage<List<SearchProfile>> getOwnerProfile (String owner_id) throws JsonGenerationException, JsonMappingException {
         SearchProfile searchProfile = new SearchProfile();
