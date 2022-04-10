@@ -63,11 +63,11 @@ public class FreelancerClient {
             WSRequest req = client.url(baseURL+"/projects/0.1/projects/active");
 //			System.out.println(Json.fromJson((req.addQueryParameter("query", freelancerQuery).get()).asJson(), SearchResult.class));
             return req
-                    .addHeader("freelancelotESAPP","UzhSBUrlZiSK4o8yQ8CA8ZyJ36VRvh")
                     .addQueryParameter("query",freelancerQuery)
                     .addQueryParameter("compact","false")
                     .addQueryParameter("job_details","true")
                     .addQueryParameter("limit","250")
+                    .addQueryParameter("preview_description","true")
                     .get()
                     .thenApplyAsync(WSResponse::asJson)
                     .thenApplyAsync(r-> {
@@ -76,8 +76,12 @@ public class FreelancerClient {
 //                        System.out.println("r is here" + r);
                         int f = 10;
                         for(int i= 0;i<=250;i++){
+                            try{
+                                descriptionList.add(r.get("result").get("projects").get(i).get("preview_description").asText().replaceAll("\\p{Punct}", ""));
 
-                            descriptionList.add(r.get("result").get("projects").get(f).get("preview_description").asText().replaceAll("\\p{Punct}", ""));
+                            }catch(Exception e){
+                                // e.printStackTrace();
+                            }
                         }
                         while (f>0) {
                             System.out.println("Hello");
@@ -112,8 +116,8 @@ public class FreelancerClient {
                             projectsList.add(project);
                             f--;
                         }
-                        System.out.println("below description list: ");
-                        System.out.println(descriptionList);
+                        // System.out.println("below description list: ");
+                        // System.out.println(descriptionList);
                         SearchResult searchResult = new SearchResult();
                         searchResult.setInput(query);
                         searchResult.setProjects(projectsList);
@@ -132,22 +136,53 @@ public class FreelancerClient {
                         for(int i = 0; i< descriptionList.size();i++){
                             total_syllables = total_syllables + countSyllables(descriptionList.get(i));
                         }
+                        String level = null;
 //                        int total_syllables = countSyllables(prev_desc_list.get(0));
                         if (total_sentences > 0 && total_words > 0 && total_syllables > 0) {
                             double FRI = (206.835 - 84.6)*((double)total_syllables/(double)total_words) - 1.015 * ((double)total_words/(double)total_sentences);
                             float FRI_value = (float)(FRI);
                             searchResult.setIndex(FRI_value);
                             double FREL = 0.39*((double)total_words/(double)total_sentences) + 11.8*((double)total_syllables/(double)total_words) - 15.59;
-
                             float FREL_value = (float)(FREL);
-                            searchResult.setLevel(FREL_value);
+
+                            if(FRI_value > 100){
+                                level = "Early";
+                            }
+                            else if(FRI_value > 91){
+                                level = "5th Grade";
+                            }
+                            else if(FRI_value > 81){
+                                level = "6th Grade";
+                            }
+                            else if(FRI_value > 71){
+                                level = "7th Grade";
+                            }
+                            else if(FRI_value > 66){
+                                level = "8th Grade";
+                            }
+                            else if(FRI_value > 61){
+                                level = "9th Grade";
+                            }
+                            else if(FRI_value > 51){
+                                level = "High School";
+                            }
+                            else if(FRI_value > 31){
+                                level = "Some College";
+                            }
+                            else if(FRI_value > 0){
+                                level = "College Graduate";
+                            }
+                            else{
+                                level = "Law School Graduate";
+                            }
+                            searchResult.setLevel(level);
 //                            return fdata;
                         }
                         else{
                             float FRI_value = 0;
                             float FREL_value = 0;
                             searchResult.setIndex(FRI_value);
-                            searchResult.setLevel(FREL_value);
+                            searchResult.setLevel("no level");
 //                            return fdata;
                         }
                         return searchResult;
@@ -158,7 +193,7 @@ public class FreelancerClient {
 
     /**
      * Gets the profile of an owner
-     * @author Saumya,Stallone, Swapnil, Esha
+     * @author Esha
      * @param owner_id takes owner id as an arguement
      * @return liSearch
      * @throws JsonGenerationException
@@ -374,22 +409,28 @@ public class FreelancerClient {
                 .map(w -> w.split("[!?.:]+"))
                 .flatMap(Arrays::stream)
                 .count();
+        String level = null;
         int total_syllables = countSyllables(prev_desc_list.get(0));
         if (total_sentences > 0 && total_words > 0 && total_syllables > 0) {
             double FRI = (206.835 - 84.6)*((double)total_syllables/(double)total_words) - 1.015 * ((double)total_words/(double)total_sentences);
             float FRI_value = (float)(FRI);
-            fdata.put("Flesch Readability Index",FRI_value);
+            
             double FREL = 0.39*((double)total_words/(double)total_sentences) + 11.8*((double)total_syllables/(double)total_words) - 15.59;
 
-            float FREL_value = (float)(FREL);
-            fdata.put("Flesch Readability Education Level",FREL_value);
+
+            float FREL_Value = (float)(FREL);
+            fdata.put("Flesch Readability Index",FRI_value);
+            fdata.put("level",FREL_Value);
+            // fdata.put("Flesch Readability Index",FRI_value);
+            System.out.println(fdata);
             return fdata;
         }
         else{
             float FRI_Value = 0;
             float FREL_Value = 0;
+            fdata.put(level,FREL_Value);
             fdata.put("Flesch Readability Index",FRI_Value);
-            fdata.put("Flesch Readability Education Level",FREL_Value);
+            
             return fdata;
         }
     }
@@ -401,7 +442,6 @@ public class FreelancerClient {
     public static int countSyllables(final String word) {
         return Math.max(1, word.toLowerCase()
                 .replaceAll("e$", "")
-                .replaceAll("[aeiouy]{2}", "a")
                 .replaceAll("[aeiouy]{2}", "a")
                 .replaceAll("[^aeiouy]", "")
                 .length());

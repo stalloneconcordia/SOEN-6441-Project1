@@ -66,7 +66,6 @@ public class SearchController extends Controller {
                 ok(views.html.index.render(searchResults, searchForm, request, messagesApi.preferred(request)))
                         .addingToSession(request, SESSION_ID, sessionId));
     }
-
     /**
      * An endpoint that performs a search and adds the result to the history for the current session
      * @author Swapnil, Stallone, Esha, Saumya

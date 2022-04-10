@@ -14,13 +14,17 @@ public class SearchResult {
     private List<Projects> projects;
     //    private String
     private float index;
-    private float level;
+    private String level;
 
     /**
      * SearchResult constructor
      */
     public SearchResult() {
         System.out.println("inside non para contsr.");
+    }
+    public SearchResult(String input, List<Projects> projects)  {
+        this.input = input;
+        this.projects = projects;
     }
     /**
      * The getter of Index
@@ -42,14 +46,14 @@ public class SearchResult {
      * The getter of level
      * @return  level
      */
-    public float getLevel() {
+    public String getLevel() {
         return level;
     }
     /**
      * The setter of level
      * @param level takes index as an arguement
      */
-    public void setLevel(float level) {
+    public void setLevel(String level) {
         this.level = level;
     }
 

@@ -1,4 +1,4 @@
-package models;
+package ModelsTest;
 
 import org.junit.Test;
 
@@ -10,6 +10,14 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import models.FreelancerClient;
+import models.GlobalStats;
+import models.ProfileInformation;
+import models.ProjectProfile;
+import models.Projects;
+import models.SearchHistory;
+import models.SearchProfile;
+import models.SearchResult;
 
 /** 
 *The class SearchHistoryTest

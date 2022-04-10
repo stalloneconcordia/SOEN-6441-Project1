@@ -7,10 +7,28 @@
 
 <article class="text-center" style="margin-top:50px;">
     <p>INDEX STATISTICS</p>
-    @for((searchTerms, searchResultlist) <- SearchResult){
-
-    <p><b>@searchTerms:</b> @searchResultlist</p>
+    @if(SearchResult.get("Flesch Readability Index") > 100){
+        <p><b>Level:</b> Early</p>
+    }else if(SearchResult.get("Flesch Readability Index")  > 91){
+        <p><b>Level:</b> 5th grade</p>
+    }else if(SearchResult.get("Flesch Readability Index") > 81){
+        <p><b>Level:</b> 6th grade</p>
+    }else if(SearchResult.get("Flesch Readability Index") > 71){
+        <p><b>Level:</b> 7th grade</p>
+    }else if(SearchResult.get("Flesch Readability Index") > 66){
+        <p><b>Level:</b> 8th grade</p>
+    }else if(SearchResult.get("Flesch Readability Index") > 61){
+        <p><b>Level:</b> 9th grade</p>
+    }else if(SearchResult.get("Flesch Readability Index") > 51){
+        <p><b>Level:</b> High School</p>
+    }else if(SearchResult.get("Flesch Readability Index") > 31){
+        <p><b>Level:</b> Some College</p>
+    }else if(SearchResult.get("Flesch Readability Index") > 0){
+        <p><b>Level:</b> College Graduate</p>
+    }else{
+        <p><b>Level:</b> Law School Graduate</p>
     }
+    <p><b>Index: </b>@SearchResult.get("Flesch Readability Index")</p>
 </article>
 
 }

@@ -30,11 +30,11 @@ public class ProjectProfile {
     public void setLastmodifydate(String lastmodifydate) {
         this.lastmodifydate = lastmodifydate;
     }
-    @Override
-    public String toString() {
-        return "projectInfo [title=" + title + ", description=" + description + ", lastmodifydate=" + lastmodifydate
-                + ", portfolioid=" + portfolioid + "]";
-    }
+    // @Override
+    // public String toString() {
+    //     return "projectInfo [title=" + title + ", description=" + description + ", lastmodifydate=" + lastmodifydate
+    //             + ", portfolioid=" + portfolioid + "]";
+    // }
     public String getPortfolioid() {
         return portfolioid;
     }

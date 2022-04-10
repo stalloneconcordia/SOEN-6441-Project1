@@ -11,7 +11,8 @@ libraryDependencies ++= Seq(
   // Java11 requires mockito 4.0.0
   "org.mockito" % "mockito-core" % "4.0.0" % "test",
   caffeine,
-"com.google.code.gson" % "gson" % "2.2.4"
+  "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2",
+  "com.google.code.gson" % "gson" % "2.2.4"
 
 )
-
+libraryDependencies += "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2"
