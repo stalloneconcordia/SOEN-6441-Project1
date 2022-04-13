@@ -61,6 +61,10 @@ public class FreelancerClient extends AbstractActor{
                     System.out.print("SSSSSSSSSSSSSSSS");
                     sender().tell(searchPhraseResult, self());
                 })
+                .match(Integer.class,String.class, (a,b) -> {
+                    CompletionStage<List<SearchResult>> skillResult = projectsIncludingSkill(a,b);
+                    sender().tell(skillResult, self());
+                })
                 .build();
     }
 

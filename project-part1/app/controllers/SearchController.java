@@ -48,6 +48,7 @@ public class SearchController extends Controller {
     private final WSClient client;
     private AsyncCacheApi cache;
     private ActorRef searchPhraseActor;
+    private ActorRef skillActor = null;
 //    private ActorRef childSearchPhraseActor;
     private String sessionID;
     // ActorSystem system = ActorSystem.create("FreeLancelot");
@@ -65,6 +66,7 @@ public class SearchController extends Controller {
         this.searchForm = formFactory.form(SearchForm.class);
         this.messagesApi = messagesApi;
         this.searchHistory = new SearchHistory();
+        this.skillActor = system.actorOf(FreelancerClient.props(client));
         this.client = client;
         this.cache = asyncCacheApi;
 
@@ -192,9 +194,17 @@ public class SearchController extends Controller {
      */
     public CompletionStage<Result> projectsIncludingSkill(int id, String skill){
         Integer y = new Integer(id);
-         CompletionStage<SearchResult> answer = freelancer.projectsIncludingSkill(Integer.toString(y), skill);
-         return answer.thenApplyAsync(o -> ok(views.html.projectsWithSkills.render("Search term",o)));
-
+        return FutureConverters.toJava(ask(skillActor, id,skill, Integer. MAX_VALUE))
+                .thenApply(response -> {
+                    // LinkedHashMap<String, Resultlist> resultmap = null;
+                    try{skill,
+                            System.out.println(response);
+                        // resultmap = (LinkedHashMap<String, Resultlist>) response;
+                    }catch(Exception e){
+                        return ok("Internal Server Error");
+                    }
+                    return ok(views.html.skill.render(response));
+                });
     }
 
     /**
