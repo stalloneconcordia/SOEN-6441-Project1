@@ -26,28 +26,77 @@ import play.libs.ws.WSRequest;
 import play.libs.ws.WSResponse;
 import java.util.stream.Stream;
 import java.util.stream.Collectors;
-
+import akka.actor.AbstractActor;
+import akka.actor.Props;
 /**
  * Class FreelancerClient
  * @author Saumya,Stallone,Esha,Swapnil
  * The FreelancerClient class, to hold the content for a Freelancer client
  */
-public class FreelancerClient {
+public class FreelancerClient extends AbstractActor{
     /** The WSClient client */
     private final WSClient client;
 
     /** The String baseURL*/
-    private final String baseURL;
+    private String baseURL = null;
 
     private final AsyncCacheApi cache;
+    private  String id = null;
+
+    public static Props props(WSClient client){
+        System.out.println("id");
+        System.out.println(client);
+        return Props.create(FreelancerClient.class);
+    }
+
+    // public static Props getProps(){
+    //     return Props.create(FreelancerClient.class);
+    // }
+
+    @Override
+    public Receive createReceive() {
+        return receiveBuilder()
+                .match(String.class, (a) -> {
+                    CompletionStage<SearchResult> searchPhraseResult = searchProjects(a);
+                    System.out.print("SSSSSSSSSSSSSSSS");
+                    sender().tell(searchPhraseResult, self());
+                })
+                .match(String.class, a -> {
+                    CompletionStage<List<SearchProfile>> pup = getOwnerProfile(a);
+                    sender().tell(pup, self());
+                })
+                .match(Integer.class,String.class, (a,b) -> {
+                    CompletionStage<List<SearchResult>> skillResult = projectsIncludingSkill(a,b);
+                    sender().tell(skillResult, self());
+                })
+                .match(String.class, desc -> {
+                    CompletionStage<GlobalStats> statsResult = getGlobalStats(desc);
+                    System.out.println("StatsResult : "+statsResult);
+                    sender().tell(statsResult, self());
+                })
+                .build();
+        }
+    
 
     /** The Constructor*/
+    // @Inject
+    // public FreelancerClient(WSClient client){
+    //     this.client = client;
+    //     // this.id = id;
+    // }
     @Inject
-    public FreelancerClient(WSClient client, AsyncCacheApi cache, Config config) {
+    public FreelancerClient (WSClient client, AsyncCacheApi cache, Config config,String id) {
         this.client = client;
         this.cache = cache;
         this.baseURL = config.getString("freelancer.url");
+        this.id = id;
     }
+
+    // public FreelancerClient(){
+    //     this.client = null;
+    //     this.cache = null;
+    //     this.baseURL = null;
+    // }
 
     /**
      * @author Saumya,Stallone,Esha,Swapnil
@@ -59,7 +108,7 @@ public class FreelancerClient {
     public CompletionStage<SearchResult> searchProjects(String query) throws JsonGenerationException, JsonMappingException  {
 //    	https://www.freelancer.com/api/projects/0.1/projects/active/?query=
         String freelancerQuery = query;
-        return cache.getOrElseUpdate("search://"+freelancerQuery,()->{
+        // return cache.getOrElseUpdate("search://"+freelancerQuery,()->{
             WSRequest req = client.url(baseURL+"/projects/0.1/projects/active");
 //			System.out.println(Json.fromJson((req.addQueryParameter("query", freelancerQuery).get()).asJson(), SearchResult.class));
             return req
@@ -85,7 +134,6 @@ public class FreelancerClient {
                         }
                         while (f>0) {
                             System.out.println("Hello");
-//                            System.out.println("new job " +  r.get("result").get("projects").get(f).get("jobs").asText().getClass().getSimpleName());
                             Projects project = new Projects();
                             JsonNode  skills = r.get("result").get("projects").get(f).get("jobs");
                             HashMap<String,Integer> skillsData = new HashMap<>();
@@ -187,8 +235,8 @@ public class FreelancerClient {
                         }
                         return searchResult;
 //
-                    } );
-        },4000);
+                    });
+        // },4000);
     }
 
     /**
@@ -267,6 +315,7 @@ public class FreelancerClient {
 
     }
 
+
     /**
      *displays the projects for a given skill
      * @author Stallone
@@ -324,7 +373,7 @@ public class FreelancerClient {
                         return searchResult;
                        } );
                     },4000);    
-                    }
+    }
 
     /**
      * displays the statistics from preview description of a particular project
@@ -448,7 +497,8 @@ public class FreelancerClient {
     }
 
 
-}
+    }
+// }
 
 
 
