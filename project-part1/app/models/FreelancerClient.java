@@ -77,6 +77,8 @@ public class FreelancerClient extends AbstractActor{
                 .build();
         }
     
+                .build();
+
 
     /** The Constructor*/
     // @Inject
@@ -110,27 +112,27 @@ public class FreelancerClient extends AbstractActor{
         String freelancerQuery = query;
         // return cache.getOrElseUpdate("search://"+freelancerQuery,()->{
             WSRequest req = client.url(baseURL+"/projects/0.1/projects/active");
-//			System.out.println(Json.fromJson((req.addQueryParameter("query", freelancerQuery).get()).asJson(), SearchResult.class));
-            return req
-                    .addQueryParameter("query",freelancerQuery)
-                    .addQueryParameter("compact","false")
-                    .addQueryParameter("job_details","true")
-                    .addQueryParameter("limit","250")
-                    .addQueryParameter("preview_description","true")
-                    .get()
-                    .thenApplyAsync(WSResponse::asJson)
-                    .thenApplyAsync(r-> {
-                        ArrayList<Projects> projectsList = new ArrayList<>();
-                        List<String> descriptionList = new ArrayList<>();
-//                        System.out.println("r is here" + r);
-                        int f = 10;
-                        for(int i= 0;i<=250;i++){
-                            try{
-                                descriptionList.add(r.get("result").get("projects").get(i).get("preview_description").asText().replaceAll("\\p{Punct}", ""));
 
-                            }catch(Exception e){
-                                // e.printStackTrace();
-                            }
+//			System.out.println(Json.fromJson((req.addQueryParameter("query", freelancerQuery).get()).asJson(), SearchResult.class));
+        return req
+                .addQueryParameter("query",freelancerQuery)
+                .addQueryParameter("compact","false")
+                .addQueryParameter("job_details","true")
+                .addQueryParameter("limit","250")
+                .addQueryParameter("preview_description","true")
+                .get()
+                .thenApplyAsync(WSResponse::asJson)
+                .thenApplyAsync(r-> {
+                    ArrayList<Projects> projectsList = new ArrayList<>();
+                    List<String> descriptionList = new ArrayList<>();
+//                        System.out.println("r is here" + r);
+                    int f = 10;
+                    for(int i= 0;i<=250;i++){
+                        try{
+                            descriptionList.add(r.get("result").get("projects").get(i).get("preview_description").asText().replaceAll("\\p{Punct}", ""));
+
+                        }catch(Exception e){
+                            // e.printStackTrace();
                         }
                         while (f>0) {
                             System.out.println("Hello");
@@ -149,93 +151,97 @@ public class FreelancerClient extends AbstractActor{
 
 
                             }
-                            project.setSkills(skillsData);
-                            project.setOwner(r.get("result").get("projects").get(f).get("owner_id").asText());
-                            project.setTitle(r.get("result").get("projects").get(f).get("title").asText());
-                            project.setType(r.get("result").get("projects").get(f).get("type").asText());
-                            project.setPrevDesc(r.get("result").get("projects").get(f).get("preview_description").asText());
 
-                            Date date = new Date(r.get("result").get("projects").get(f).get("submitdate").asLong() * 1_000L);
-                            DateFormat simple = new SimpleDateFormat("MMM dd yyyy");
-                            project.setDate(simple.format(date));
-                            project.setSeo_url(r.get("result").get("projects").get(f).get("seo_url").asText());
-                            project.setType(r.get("result").get("projects").get(f).get("type").asText());
-                            descriptionList.add(r.get("result").get("projects").get(f).get("preview_description").asText().replaceAll("\\p{Punct}", ""));
-                            projectsList.add(project);
-                            f--;
+
                         }
-                        // System.out.println("below description list: ");
-                        // System.out.println(descriptionList);
-                        SearchResult searchResult = new SearchResult();
-                        searchResult.setInput(query);
-                        searchResult.setProjects(projectsList);
+                        project.setSkills(skillsData);
+                        project.setOwner(r.get("result").get("projects").get(f).get("owner_id").asText());
+                        project.setTitle(r.get("result").get("projects").get(f).get("title").asText());
+                        project.setType(r.get("result").get("projects").get(f).get("type").asText());
+                        project.setPrevDesc(r.get("result").get("projects").get(f).get("preview_description").asText());
+
+                        Date date = new Date(r.get("result").get("projects").get(f).get("submitdate").asLong() * 1_000L);
+                        DateFormat simple = new SimpleDateFormat("MMM dd yyyy");
+                        project.setDate(simple.format(date));
+                        project.setSeo_url(r.get("result").get("projects").get(f).get("seo_url").asText());
+                        project.setType(r.get("result").get("projects").get(f).get("type").asText());
+                        descriptionList.add(r.get("result").get("projects").get(f).get("preview_description").asText().replaceAll("\\p{Punct}", ""));
+                        projectsList.add(project);
+                        f--;
+                    }
+                    // System.out.println("below description list: ");
+                    // System.out.println(descriptionList);
+                    SearchResult searchResult = new SearchResult();
+                    searchResult.setInput(query);
+                    searchResult.setProjects(projectsList);
 //                        List<String> prev_desc_list = new ArrayList<>();
 //                        prev_desc_list.add(prev_desc);
-                        long total_words = descriptionList.stream()
-                                .map(w -> w.replaceAll("\\p{Punct}", "").split(" "))
-                                .flatMap(Arrays::stream)
-                                .count();
+                    long total_words = descriptionList.stream()
+                            .map(w -> w.replaceAll("\\p{Punct}", "").split(" "))
+                            .flatMap(Arrays::stream)
+                            .count();
 
-                        long total_sentences = descriptionList.stream()
-                                .map(w -> w.split("[!?.:]+"))
-                                .flatMap(Arrays::stream)
-                                .count();
-                        int total_syllables = 0;
-                        for(int i = 0; i< descriptionList.size();i++){
-                            total_syllables = total_syllables + countSyllables(descriptionList.get(i));
-                        }
-                        String level = null;
+                    long total_sentences = descriptionList.stream()
+                            .map(w -> w.split("[!?.:]+"))
+                            .flatMap(Arrays::stream)
+                            .count();
+                    int total_syllables = 0;
+                    for(int i = 0; i< descriptionList.size();i++){
+                        total_syllables = total_syllables + countSyllables(descriptionList.get(i));
+                    }
+                    String level = null;
 //                        int total_syllables = countSyllables(prev_desc_list.get(0));
-                        if (total_sentences > 0 && total_words > 0 && total_syllables > 0) {
-                            double FRI = (206.835 - 84.6)*((double)total_syllables/(double)total_words) - 1.015 * ((double)total_words/(double)total_sentences);
-                            float FRI_value = (float)(FRI);
-                            searchResult.setIndex(FRI_value);
-                            double FREL = 0.39*((double)total_words/(double)total_sentences) + 11.8*((double)total_syllables/(double)total_words) - 15.59;
-                            float FREL_value = (float)(FREL);
+                    if (total_sentences > 0 && total_words > 0 && total_syllables > 0) {
+                        double FRI = (206.835 - 84.6)*((double)total_syllables/(double)total_words) - 1.015 * ((double)total_words/(double)total_sentences);
+                        float FRI_value = (float)(FRI);
+                        searchResult.setIndex(FRI_value);
+                        double FREL = 0.39*((double)total_words/(double)total_sentences) + 11.8*((double)total_syllables/(double)total_words) - 15.59;
+                        float FREL_value = (float)(FREL);
 
-                            if(FRI_value > 100){
-                                level = "Early";
-                            }
-                            else if(FRI_value > 91){
-                                level = "5th Grade";
-                            }
-                            else if(FRI_value > 81){
-                                level = "6th Grade";
-                            }
-                            else if(FRI_value > 71){
-                                level = "7th Grade";
-                            }
-                            else if(FRI_value > 66){
-                                level = "8th Grade";
-                            }
-                            else if(FRI_value > 61){
-                                level = "9th Grade";
-                            }
-                            else if(FRI_value > 51){
-                                level = "High School";
-                            }
-                            else if(FRI_value > 31){
-                                level = "Some College";
-                            }
-                            else if(FRI_value > 0){
-                                level = "College Graduate";
-                            }
-                            else{
-                                level = "Law School Graduate";
-                            }
-                            searchResult.setLevel(level);
-//                            return fdata;
+                        if(FRI_value > 100){
+                            level = "Early";
+                        }
+                        else if(FRI_value > 91){
+                            level = "5th Grade";
+                        }
+                        else if(FRI_value > 81){
+                            level = "6th Grade";
+                        }
+                        else if(FRI_value > 71){
+                            level = "7th Grade";
+                        }
+                        else if(FRI_value > 66){
+                            level = "8th Grade";
+                        }
+                        else if(FRI_value > 61){
+                            level = "9th Grade";
+                        }
+                        else if(FRI_value > 51){
+                            level = "High School";
+                        }
+                        else if(FRI_value > 31){
+                            level = "Some College";
+                        }
+                        else if(FRI_value > 0){
+                            level = "College Graduate";
                         }
                         else{
-                            float FRI_value = 0;
-                            float FREL_value = 0;
-                            searchResult.setIndex(FRI_value);
-                            searchResult.setLevel("no level");
-//                            return fdata;
+                            level = "Law School Graduate";
                         }
-                        return searchResult;
+                        searchResult.setLevel(level);
+//                            return fdata;
+                    }
+                    else{
+                        float FRI_value = 0;
+                        float FREL_value = 0;
+                        searchResult.setIndex(FRI_value);
+                        searchResult.setLevel("no level");
+//                            return fdata;
+                    }
+                    return searchResult;
 //
-                    });
+
+                });
         // },4000);
     }
 
@@ -387,9 +393,9 @@ public class FreelancerClient extends AbstractActor{
         Map <String, Integer > wordCounter = list.stream()
                 .collect(Collectors.toMap(w -> w.toLowerCase(), w -> 1, Integer::sum));
         Map<String, Integer> temp = new LinkedHashMap<>();
-                      wordCounter.entrySet().stream()
-                              .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
-                              .forEachOrdered(x -> temp.put(x.getKey(), x.getValue()));
+        wordCounter.entrySet().stream()
+                .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
+                .forEachOrdered(x -> temp.put(x.getKey(), x.getValue()));
         return temp;
     }
 
@@ -400,44 +406,44 @@ public class FreelancerClient extends AbstractActor{
      * @return  globalStats
      */
     public CompletionStage<GlobalStats> getGlobalStats(String searchkeyword){
-            WSRequest req = client.url(baseURL+"/projects/0.1/projects/active");
-            return req
-                    .addHeader("freelancelotESAPP","UzhSBUrlZiSK4o8yQ8CA8ZyJ36VRvh")
-                    .addQueryParameter("query",searchkeyword)
-                    .addQueryParameter("preview_description","true")
-                    .addQueryParameter("limit","250")
-                    .get()
-                    .thenApplyAsync(WSResponse::asJson)
-                    .thenApplyAsync(r-> {
-                        List<String> descriptionList = new ArrayList<>();
-                        int f = 0;
-                      while (r.get("result").get("projects").get(f) != null) {
-                          descriptionList.add(r.get("result").get("projects").get(f).get("preview_description").asText());
-                          f++;
-                      }
-                      String allwords ="";
-                      for (int i = 0; i < descriptionList.size(); i++) {
-                          allwords = allwords+ descriptionList.get(i);
-                      }
-                      List <String> words = Stream.of(allwords).
-                                map(a -> ((String) a)
-                                .replaceAll("[^a-zA-Z ]", "")
-                                .split("\\s+")).flatMap(Arrays::stream)
-                                .collect(Collectors.toList());
-                      
-                      Map <String, Integer> wordCounter = words.stream()
-                              .collect(Collectors.toMap(w -> w.toLowerCase(), w -> 1, Integer::sum));
-                        
-                      GlobalStats globalstats = new GlobalStats();
-                      Map<String, Integer> temp = new LinkedHashMap<>();
-                      wordCounter.entrySet().stream()
-                              .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
-                              .forEachOrdered(x -> temp.put(x.getKey(), x.getValue()));
-                      globalstats.setSortedWordCounter(temp);
-                      return globalstats;
-            
-                    });
-        }
+        WSRequest req = client.url(baseURL+"/projects/0.1/projects/active");
+        return req
+                .addHeader("freelancelotESAPP","UzhSBUrlZiSK4o8yQ8CA8ZyJ36VRvh")
+                .addQueryParameter("query",searchkeyword)
+                .addQueryParameter("preview_description","true")
+                .addQueryParameter("limit","250")
+                .get()
+                .thenApplyAsync(WSResponse::asJson)
+                .thenApplyAsync(r-> {
+                    List<String> descriptionList = new ArrayList<>();
+                    int f = 0;
+                    while (r.get("result").get("projects").get(f) != null) {
+                        descriptionList.add(r.get("result").get("projects").get(f).get("preview_description").asText());
+                        f++;
+                    }
+                    String allwords ="";
+                    for (int i = 0; i < descriptionList.size(); i++) {
+                        allwords = allwords+ descriptionList.get(i);
+                    }
+                    List <String> words = Stream.of(allwords).
+                            map(a -> ((String) a)
+                                    .replaceAll("[^a-zA-Z ]", "")
+                                    .split("\\s+")).flatMap(Arrays::stream)
+                            .collect(Collectors.toList());
+
+                    Map <String, Integer> wordCounter = words.stream()
+                            .collect(Collectors.toMap(w -> w.toLowerCase(), w -> 1, Integer::sum));
+
+                    GlobalStats globalstats = new GlobalStats();
+                    Map<String, Integer> temp = new LinkedHashMap<>();
+                    wordCounter.entrySet().stream()
+                            .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
+                            .forEachOrdered(x -> temp.put(x.getKey(), x.getValue()));
+                    globalstats.setSortedWordCounter(temp);
+                    return globalstats;
+
+                });
+    }
 
     /**
      * Counts the readability index
@@ -463,7 +469,7 @@ public class FreelancerClient extends AbstractActor{
         if (total_sentences > 0 && total_words > 0 && total_syllables > 0) {
             double FRI = (206.835 - 84.6)*((double)total_syllables/(double)total_words) - 1.015 * ((double)total_words/(double)total_sentences);
             float FRI_value = (float)(FRI);
-            
+
             double FREL = 0.39*((double)total_words/(double)total_sentences) + 11.8*((double)total_syllables/(double)total_words) - 15.59;
 
 
@@ -479,7 +485,7 @@ public class FreelancerClient extends AbstractActor{
             float FREL_Value = 0;
             fdata.put(level,FREL_Value);
             fdata.put("Flesch Readability Index",FRI_Value);
-            
+
             return fdata;
         }
     }
@@ -497,7 +503,8 @@ public class FreelancerClient extends AbstractActor{
     }
 
 
-    }
+
+}
 // }
 
 
