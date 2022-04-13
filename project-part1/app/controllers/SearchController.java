@@ -39,6 +39,7 @@ import akka.actor.Props;
  */
 public class SearchController extends Controller {
 
+
         public static final String SESSION_ID = "session_id";
 
         private final FreelancerClient freelancer;
@@ -74,7 +75,8 @@ public class SearchController extends Controller {
 
             // this.searchPhraseActor = system.actorOf(FreelancerClient.getProps());
 
-        }
+
+    }
 
     /**
      * The homepage which displays the search history of the current session
@@ -110,6 +112,7 @@ public class SearchController extends Controller {
             // searchPhraseActor = system.actorOf()
             System.out.println("Here..111");
             // searchPhraseActor = system.actorOf(SearchPhrase.props(sessionId));
+
             
             String searchInput = boundForm.get().getInput();
             sessionID = request.session().get(SESSION_ID).orElseGet(() -> UUID.randomUUID().toString());
@@ -118,7 +121,7 @@ public class SearchController extends Controller {
             System.out.println("[INFO] new Actor Created"+searchPhraseActor);
             // String arr = new String[10];
             
-            
+ 
             return FutureConverters.toJava(ask(searchPhraseActor, searchInput, Integer. MAX_VALUE))
                     .thenApplyAsync(response -> {
                         // LinkedHashMap<String, Resultlist> resultmap = null;
@@ -130,26 +133,27 @@ public class SearchController extends Controller {
                         }
                         return ok(views.html.index.render((List<SearchResult>)response,searchForm, request, messagesApi.preferred(request)));
                     });
-            
-                    // .thenApply(response -> {
-                    //     System.out.println("argagf....");
-                    // try{
-                    //     // CompletionStage<SearchResult> resultmap = null;
-                    //     System.out.println(response);
-                    //     // System.out.println(response.getClassName().getSimpleName());
-                    //     // resultmap = response;
-                    // }
-                    // catch (Exception e){
-                    //     e.printStackTrace();
-                    // });
-                    // arr[
-                        // return ok(views.html.index.render(resultmap));
-                    // .addingToSession(request, SESSION_ID, sessionId);
-                // return freelancer.searchProjects(searchInput)
-                //         .thenAccept(searchResult -> searchHistory.addToHistory(sessionId, searchResult))
-                //         .thenApplyAsync(nullResult -> redirect(routes.SearchController.index())
-                //                 .addingToSession(request, SESSION_ID, sessionId));
-            
+
+
+            // .thenApply(response -> {
+            //     System.out.println("argagf....");
+            // try{
+            //     // CompletionStage<SearchResult> resultmap = null;
+            //     System.out.println(response);
+            //     // System.out.println(response.getClassName().getSimpleName());
+            //     // resultmap = response;
+            // }
+            // catch (Exception e){
+            //     e.printStackTrace();
+            // });
+            // arr[
+            // return ok(views.html.index.render(resultmap));
+            // .addingToSession(request, SESSION_ID, sessionId);
+            // return freelancer.searchProjects(searchInput)
+            //         .thenAccept(searchResult -> searchHistory.addToHistory(sessionId, searchResult))
+            //         .thenApplyAsync(nullResult -> redirect(routes.SearchController.index())
+            //                 .addingToSession(request, SESSION_ID, sessionId));
+
             // return CompletableFuture.completedFuture(redirect(routes.SearchController.index()));
         }
     }
@@ -162,6 +166,7 @@ public class SearchController extends Controller {
      * @return  profileInformation displays profile information for an owner id
      */
     public CompletionStage<Result> profileInfo(String  ownerId) throws JsonGenerationException, JsonMappingException{
+
         // CompletionStage<List<SearchProfile>> res = freelancer.getOwnerProfile(ownerId);
         // return res.thenApplyAsync(o -> ok(views.html.profileInformation.render(o)));
         return FutureConverters.toJava(ask(profileActor, ownerId, Integer. MAX_VALUE))
@@ -173,6 +178,7 @@ public class SearchController extends Controller {
                     }
                     return ok(views.html.profile.render(resultmap));
                 });
+
     }
 
     /**
@@ -190,6 +196,7 @@ public class SearchController extends Controller {
         CompletionStage<GlobalStats> res = freelancer.getGlobalStats(keyword);
         return res.thenApplyAsync(o -> ok(views.html.globalStats.render(o)));
     
+
     }
 
 
@@ -203,13 +210,12 @@ public class SearchController extends Controller {
      */
     public CompletionStage<Result> projectsIncludingSkill(int id, String skill){
         Integer y = new Integer(id);
-        // CompletionStage<SearchResult> answer = freelancer.projectsIncludingSkill(Integer.toString(y), skill);
-        // return answer.thenApplyAsync(o -> ok(views.html.projectsWithSkills.render("Search term",o)));
+
         return FutureConverters.toJava(ask(skillActor, id,skill, Integer. MAX_VALUE))
                 .thenApply(response -> {
                     // LinkedHashMap<String, Resultlist> resultmap = null;
                     try{skill,
-                        System.out.println(response);
+
                         // resultmap = (LinkedHashMap<String, Resultlist>) response;
                     }catch(Exception e){
                         return ok("Internal Server Error");
@@ -231,15 +237,15 @@ public class SearchController extends Controller {
         return ok(views.html.projectStats.render(temp));
     }
 
-/**
- * Controller Method for api: /readability/:prev_desc
- * displays the readability index  from preview description
- * @author Saumya
- * @param prev_desc Preview desrciption as an arguement
- * @return  result
+    /**
+     * Controller Method for api: /readability/:prev_desc
+     * displays the readability index  from preview description
+     * @author Saumya
+     * @param prev_desc Preview desrciption as an arguement
+     * @return  result
 
- */
-   public Result readability(String prev_desc) throws JsonGenerationException, JsonMappingException{
+     */
+    public Result readability(String prev_desc) throws JsonGenerationException, JsonMappingException{
         HashMap<String,Float> fdata = freelancer.getReadabilityIndex(prev_desc);
         return ok(views.html.readability.render(fdata));
     }
