@@ -65,11 +65,18 @@ public class FreelancerClient extends AbstractActor{
                     CompletionStage<List<SearchProfile>> pup = getOwnerProfile(a);
                     sender().tell(pup, self());
                 })
-
                 .match(Integer.class,String.class, (a,b) -> {
                     CompletionStage<List<SearchResult>> skillResult = projectsIncludingSkill(a,b);
                     sender().tell(skillResult, self());
                 })
+                .match(String.class, desc -> {
+                    CompletionStage<GlobalStats> statsResult = getGlobalStats(desc);
+                    System.out.println("StatsResult : "+statsResult);
+                    sender().tell(statsResult, self());
+                })
+                .build();
+        }
+    
                 .build();
 
 
@@ -372,7 +379,6 @@ public class FreelancerClient extends AbstractActor{
                         return searchResult;
                        } );
                     },4000);    
-
     }
 
     /**

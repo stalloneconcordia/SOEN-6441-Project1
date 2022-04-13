@@ -52,6 +52,7 @@ public class SearchController extends Controller {
 //  private ActorRef childSearchPhraseActor;
         private ActorRef profileActor = null;
         private ActorRef skillActor = null;
+        private ActorRef statsActor = null;
         private String sessionID;
         // ActorSystem system = ActorSystem.create("FreeLancelot");
 
@@ -72,6 +73,8 @@ public class SearchController extends Controller {
             this.cache = asyncCacheApi;
             this.profileActor = system.actorOf(FreelancerClient.props(client));
             this.skillActor = system.actorOf(FreelancerClient.props(client));
+            this.statsActor = system.actorOf(FreelancerClient.props(client));
+
 
             // this.searchPhraseActor = system.actorOf(FreelancerClient.getProps());
 
@@ -112,7 +115,6 @@ public class SearchController extends Controller {
             // searchPhraseActor = system.actorOf()
             System.out.println("Here..111");
             // searchPhraseActor = system.actorOf(SearchPhrase.props(sessionId));
-
             
             String searchInput = boundForm.get().getInput();
             sessionID = request.session().get(SESSION_ID).orElseGet(() -> UUID.randomUUID().toString());
@@ -121,7 +123,6 @@ public class SearchController extends Controller {
             System.out.println("[INFO] new Actor Created"+searchPhraseActor);
             // String arr = new String[10];
             
- 
             return FutureConverters.toJava(ask(searchPhraseActor, searchInput, Integer. MAX_VALUE))
                     .thenApplyAsync(response -> {
                         // LinkedHashMap<String, Resultlist> resultmap = null;
@@ -133,6 +134,26 @@ public class SearchController extends Controller {
                         }
                         return ok(views.html.index.render((List<SearchResult>)response,searchForm, request, messagesApi.preferred(request)));
                     });
+            
+                    // .thenApply(response -> {
+                    //     System.out.println("argagf....");
+                    // try{
+                    //     // CompletionStage<SearchResult> resultmap = null;
+                    //     System.out.println(response);
+                    //     // System.out.println(response.getClassName().getSimpleName());
+                    //     // resultmap = response;
+                    // }
+                    // catch (Exception e){
+                    //     e.printStackTrace();
+                    // });
+                    // arr[
+                        // return ok(views.html.index.render(resultmap));
+                    // .addingToSession(request, SESSION_ID, sessionId);
+                // return freelancer.searchProjects(searchInput)
+                //         .thenAccept(searchResult -> searchHistory.addToHistory(sessionId, searchResult))
+                //         .thenApplyAsync(nullResult -> redirect(routes.SearchController.index())
+                //                 .addingToSession(request, SESSION_ID, sessionId));
+            
 
 
             // .thenApply(response -> {
@@ -166,7 +187,6 @@ public class SearchController extends Controller {
      * @return  profileInformation displays profile information for an owner id
      */
     public CompletionStage<Result> profileInfo(String  ownerId) throws JsonGenerationException, JsonMappingException{
-
         // CompletionStage<List<SearchProfile>> res = freelancer.getOwnerProfile(ownerId);
         // return res.thenApplyAsync(o -> ok(views.html.profileInformation.render(o)));
         return FutureConverters.toJava(ask(profileActor, ownerId, Integer. MAX_VALUE))
@@ -178,7 +198,6 @@ public class SearchController extends Controller {
                     }
                     return ok(views.html.profile.render(resultmap));
                 });
-
     }
 
     /**
@@ -189,6 +208,22 @@ public class SearchController extends Controller {
      * @return  globalStats returns stats for the keyword
      */
     public CompletionStage<Result> globalStats(String keyword){  
+//      Map<String,Integer> stats;
+//        stats = freelancer.getGlobalStats(keyword);
+//        return CompletableFuture.completedFuture(
+//                ok(views.html.globalStats.render(freelancer.getGlobalStats(keyword))));
+        // CompletionStage<GlobalStats> res = freelancer.getGlobalStats(keyword);
+        // return res.thenApplyAsync(o -> ok(views.html.globalStats.render(o)));
+        return FutureConverters.toJava(ask(statsActor, keyword, Integer.MAX_VALUE))
+                .thenApply(response -> {
+                    // LinkedHashMap<String, Resultlist> resultmap = null;
+                    try{
+                        // resultmap = (LinkedHashMap<String, Resultlist>) response;
+                    }catch(Exception e){
+                        return ok("Internal Server Error");
+                    }
+                    return ok(views.html.stat.render(response));
+                });
      Map<String,Integer> stats;
        stats = freelancer.getGlobalStats(keyword);
        return CompletableFuture.completedFuture(
@@ -210,12 +245,13 @@ public class SearchController extends Controller {
      */
     public CompletionStage<Result> projectsIncludingSkill(int id, String skill){
         Integer y = new Integer(id);
-
+        // CompletionStage<SearchResult> answer = freelancer.projectsIncludingSkill(Integer.toString(y), skill);
+        // return answer.thenApplyAsync(o -> ok(views.html.projectsWithSkills.render("Search term",o)));
         return FutureConverters.toJava(ask(skillActor, id,skill, Integer. MAX_VALUE))
                 .thenApply(response -> {
                     // LinkedHashMap<String, Resultlist> resultmap = null;
                     try{skill,
-
+                        System.out.println(response);
                         // resultmap = (LinkedHashMap<String, Resultlist>) response;
                     }catch(Exception e){
                         return ok("Internal Server Error");
