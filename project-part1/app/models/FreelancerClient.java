@@ -61,12 +61,16 @@ public class FreelancerClient extends AbstractActor{
                     System.out.print("SSSSSSSSSSSSSSSS");
                     sender().tell(searchPhraseResult, self());
                 })
+                .match(String.class, a -> {
+                    CompletionStage<List<SearchProfile>> pup = getOwnerProfile(a);
+                    sender().tell(pup, self());
+                })
+
                 .match(Integer.class,String.class, (a,b) -> {
                     CompletionStage<List<SearchResult>> skillResult = projectsIncludingSkill(a,b);
                     sender().tell(skillResult, self());
                 })
                 .build();
-    }
 
 
     /** The Constructor*/
@@ -100,7 +104,8 @@ public class FreelancerClient extends AbstractActor{
 //    	https://www.freelancer.com/api/projects/0.1/projects/active/?query=
         String freelancerQuery = query;
         // return cache.getOrElseUpdate("search://"+freelancerQuery,()->{
-        WSRequest req = client.url(baseURL+"/projects/0.1/projects/active");
+            WSRequest req = client.url(baseURL+"/projects/0.1/projects/active");
+
 //			System.out.println(Json.fromJson((req.addQueryParameter("query", freelancerQuery).get()).asJson(), SearchResult.class));
         return req
                 .addQueryParameter("query",freelancerQuery)
@@ -122,20 +127,22 @@ public class FreelancerClient extends AbstractActor{
                         }catch(Exception e){
                             // e.printStackTrace();
                         }
-                    }
-                    while (f>0) {
-                        System.out.println("Hello");
-                        Projects project = new Projects();
-                        JsonNode  skills = r.get("result").get("projects").get(f).get("jobs");
-                        HashMap<String,Integer> skillsData = new HashMap<>();
-                        for(int i = 0 ; i<skills.size() ; i++){
-                            int id = skills.get(i).get("id").asInt();
-                            String skillName = skills.get(i).get("name").asText();
-                            if(skillsData.containsKey(id)){
-                                continue;
-                            }
-                            else{
-                                skillsData.put(skillName,id);
+                        while (f>0) {
+                            System.out.println("Hello");
+                            Projects project = new Projects();
+                            JsonNode  skills = r.get("result").get("projects").get(f).get("jobs");
+                            HashMap<String,Integer> skillsData = new HashMap<>();
+                            for(int i = 0 ; i<skills.size() ; i++){
+                                int id = skills.get(i).get("id").asInt();
+                                String skillName = skills.get(i).get("name").asText();
+                                if(skillsData.containsKey(id)){
+                                    continue;
+                                }
+                                else{
+                                    skillsData.put(skillName,id);
+                                }
+
+
                             }
 
 
@@ -226,6 +233,7 @@ public class FreelancerClient extends AbstractActor{
                     }
                     return searchResult;
 //
+
                 });
         // },4000);
     }
@@ -362,8 +370,9 @@ public class FreelancerClient extends AbstractActor{
                         searchResult.setInput(skill);
                         searchResult.setProjects(projectsList);
                         return searchResult;
-                    } );
-        },4000);
+                       } );
+                    },4000);    
+
     }
 
     /**
@@ -486,6 +495,7 @@ public class FreelancerClient extends AbstractActor{
                 .replaceAll("[^aeiouy]", "")
                 .length());
     }
+
 
 
 }

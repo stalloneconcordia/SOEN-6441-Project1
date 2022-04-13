@@ -39,38 +39,42 @@ import akka.actor.Props;
  */
 public class SearchController extends Controller {
 
-    public static final String SESSION_ID = "session_id";
 
-    private final FreelancerClient freelancer;
-    private final play.data.Form<SearchForm> searchForm;
-    private final MessagesApi messagesApi;
-    private final SearchHistory searchHistory;
-    private final WSClient client;
-    private AsyncCacheApi cache;
-    private ActorRef searchPhraseActor;
-    private ActorRef skillActor = null;
-//    private ActorRef childSearchPhraseActor;
-    private String sessionID;
-    // ActorSystem system = ActorSystem.create("FreeLancelot");
+        public static final String SESSION_ID = "session_id";
+
+        private final FreelancerClient freelancer;
+        private final play.data.Form<SearchForm> searchForm;
+        private final MessagesApi messagesApi;
+        private final SearchHistory searchHistory;
+        private final WSClient client;
+        private AsyncCacheApi cache;
+        private ActorRef searchPhraseActor;
+//  private ActorRef childSearchPhraseActor;
+        private ActorRef profileActor = null;
+        private ActorRef skillActor = null;
+        private String sessionID;
+        // ActorSystem system = ActorSystem.create("FreeLancelot");
 
     /**
      *
      * The SearchController Constructor
      * @author Swapnil, Stallone, Esha, Saumya
      */
-    @Inject
-    public SearchController(FreelancerClient freelancer, FormFactory formFactory, MessagesApi messagesApi, AsyncCacheApi asyncCacheApi,ActorSystem system, WSClient client) {
-        System.out.println("inside searchcontroller constructor.....");
-        // this.searchPhraseActor = system.actorOf(FreelancerClient.props(client), "search");
-        this.freelancer = freelancer;
-        this.searchForm = formFactory.form(SearchForm.class);
-        this.messagesApi = messagesApi;
-        this.searchHistory = new SearchHistory();
-        this.skillActor = system.actorOf(FreelancerClient.props(client));
-        this.client = client;
-        this.cache = asyncCacheApi;
+        @Inject
+        public SearchController(FreelancerClient freelancer, FormFactory formFactory, MessagesApi messagesApi, AsyncCacheApi asyncCacheApi,ActorSystem system, WSClient client) {
+            System.out.println("inside searchcontroller constructor.....");
+            // this.searchPhraseActor = system.actorOf(FreelancerClient.props(client), "search");
+            this.freelancer = freelancer;
+            this.searchForm = formFactory.form(SearchForm.class);
+            this.messagesApi = messagesApi;
+            this.searchHistory = new SearchHistory();
+            this.client = client;
+            this.cache = asyncCacheApi;
+            this.profileActor = system.actorOf(FreelancerClient.props(client));
+            this.skillActor = system.actorOf(FreelancerClient.props(client));
 
-        // this.searchPhraseActor = system.actorOf(FreelancerClient.getProps());
+            // this.searchPhraseActor = system.actorOf(FreelancerClient.getProps());
+
 
     }
 
@@ -109,14 +113,15 @@ public class SearchController extends Controller {
             System.out.println("Here..111");
             // searchPhraseActor = system.actorOf(SearchPhrase.props(sessionId));
 
+            
             String searchInput = boundForm.get().getInput();
             sessionID = request.session().get(SESSION_ID).orElseGet(() -> UUID.randomUUID().toString());
             searchPhraseActor = system.actorOf(FreelancerClient.props(client));
-
+           
             System.out.println("[INFO] new Actor Created"+searchPhraseActor);
             // String arr = new String[10];
-
-
+            
+ 
             return FutureConverters.toJava(ask(searchPhraseActor, searchInput, Integer. MAX_VALUE))
                     .thenApplyAsync(response -> {
                         // LinkedHashMap<String, Resultlist> resultmap = null;
@@ -128,6 +133,7 @@ public class SearchController extends Controller {
                         }
                         return ok(views.html.index.render((List<SearchResult>)response,searchForm, request, messagesApi.preferred(request)));
                     });
+
 
             // .thenApply(response -> {
             //     System.out.println("argagf....");
@@ -160,8 +166,18 @@ public class SearchController extends Controller {
      * @return  profileInformation displays profile information for an owner id
      */
     public CompletionStage<Result> profileInfo(String  ownerId) throws JsonGenerationException, JsonMappingException{
-         CompletionStage<List<SearchProfile>> res = freelancer.getOwnerProfile(ownerId);
-         return res.thenApplyAsync(o -> ok(views.html.profileInformation.render(o)));
+
+        // CompletionStage<List<SearchProfile>> res = freelancer.getOwnerProfile(ownerId);
+        // return res.thenApplyAsync(o -> ok(views.html.profileInformation.render(o)));
+        return FutureConverters.toJava(ask(profileActor, ownerId, Integer. MAX_VALUE))
+                .thenApply(response -> {
+                    // LinkedHashMap<String, Profile> resultmap = null;
+                    try{
+                        resultmap = (List<SearchProfile>) response;
+                    }catch(Exception e){
+                    }
+                    return ok(views.html.profile.render(resultmap));
+                });
 
     }
 
@@ -172,14 +188,14 @@ public class SearchController extends Controller {
      * @param keyword takes a key word as an arguement
      * @return  globalStats returns stats for the keyword
      */
-    public CompletionStage<Result> globalStats(String keyword){
-      Map<String,Integer> stats;
-        stats = freelancer.getGlobalStats(keyword);
-        return CompletableFuture.completedFuture(
-                ok(views.html.globalStats.render(freelancer.getGlobalStats(keyword))));
-         CompletionStage<GlobalStats> res = freelancer.getGlobalStats(keyword);
-         return res.thenApplyAsync(o -> ok(views.html.globalStats.render(o)));
-
+    public CompletionStage<Result> globalStats(String keyword){  
+     Map<String,Integer> stats;
+       stats = freelancer.getGlobalStats(keyword);
+       return CompletableFuture.completedFuture(
+               ok(views.html.globalStats.render(freelancer.getGlobalStats(keyword))));
+        CompletionStage<GlobalStats> res = freelancer.getGlobalStats(keyword);
+        return res.thenApplyAsync(o -> ok(views.html.globalStats.render(o)));
+    
 
     }
 
@@ -194,11 +210,12 @@ public class SearchController extends Controller {
      */
     public CompletionStage<Result> projectsIncludingSkill(int id, String skill){
         Integer y = new Integer(id);
+
         return FutureConverters.toJava(ask(skillActor, id,skill, Integer. MAX_VALUE))
                 .thenApply(response -> {
                     // LinkedHashMap<String, Resultlist> resultmap = null;
                     try{skill,
-                            System.out.println(response);
+
                         // resultmap = (LinkedHashMap<String, Resultlist>) response;
                     }catch(Exception e){
                         return ok("Internal Server Error");
