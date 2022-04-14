@@ -39,7 +39,6 @@ import akka.actor.Props;
  */
 public class SearchController extends Controller {
 
-
         public static final String SESSION_ID = "session_id";
 
         private final FreelancerClient freelancer;
@@ -53,6 +52,7 @@ public class SearchController extends Controller {
         private ActorRef profileActor = null;
         private ActorRef skillActor = null;
         private ActorRef statsActor = null;
+        private ActorRef readabilityActor = null;
         private String sessionID;
         // ActorSystem system = ActorSystem.create("FreeLancelot");
 
@@ -74,12 +74,11 @@ public class SearchController extends Controller {
             this.profileActor = system.actorOf(FreelancerClient.props(client));
             this.skillActor = system.actorOf(FreelancerClient.props(client));
             this.statsActor = system.actorOf(FreelancerClient.props(client));
-
+            this.readabilityActor = system.actorOf(FreelancerClient.props(client));
 
             // this.searchPhraseActor = system.actorOf(FreelancerClient.getProps());
 
-
-    }
+        }
 
     /**
      * The homepage which displays the search history of the current session
@@ -123,6 +122,7 @@ public class SearchController extends Controller {
             System.out.println("[INFO] new Actor Created"+searchPhraseActor);
             // String arr = new String[10];
             
+            
             return FutureConverters.toJava(ask(searchPhraseActor, searchInput, Integer. MAX_VALUE))
                     .thenApplyAsync(response -> {
                         // LinkedHashMap<String, Resultlist> resultmap = null;
@@ -154,27 +154,6 @@ public class SearchController extends Controller {
                 //         .thenApplyAsync(nullResult -> redirect(routes.SearchController.index())
                 //                 .addingToSession(request, SESSION_ID, sessionId));
             
-
-
-            // .thenApply(response -> {
-            //     System.out.println("argagf....");
-            // try{
-            //     // CompletionStage<SearchResult> resultmap = null;
-            //     System.out.println(response);
-            //     // System.out.println(response.getClassName().getSimpleName());
-            //     // resultmap = response;
-            // }
-            // catch (Exception e){
-            //     e.printStackTrace();
-            // });
-            // arr[
-            // return ok(views.html.index.render(resultmap));
-            // .addingToSession(request, SESSION_ID, sessionId);
-            // return freelancer.searchProjects(searchInput)
-            //         .thenAccept(searchResult -> searchHistory.addToHistory(sessionId, searchResult))
-            //         .thenApplyAsync(nullResult -> redirect(routes.SearchController.index())
-            //                 .addingToSession(request, SESSION_ID, sessionId));
-
             // return CompletableFuture.completedFuture(redirect(routes.SearchController.index()));
         }
     }
@@ -224,14 +203,7 @@ public class SearchController extends Controller {
                     }
                     return ok(views.html.stat.render(response));
                 });
-     Map<String,Integer> stats;
-       stats = freelancer.getGlobalStats(keyword);
-       return CompletableFuture.completedFuture(
-               ok(views.html.globalStats.render(freelancer.getGlobalStats(keyword))));
-        CompletionStage<GlobalStats> res = freelancer.getGlobalStats(keyword);
-        return res.thenApplyAsync(o -> ok(views.html.globalStats.render(o)));
     
-
     }
 
 
@@ -273,16 +245,27 @@ public class SearchController extends Controller {
         return ok(views.html.projectStats.render(temp));
     }
 
-    /**
-     * Controller Method for api: /readability/:prev_desc
-     * displays the readability index  from preview description
-     * @author Saumya
-     * @param prev_desc Preview desrciption as an arguement
-     * @return  result
+/**
+ * Controller Method for api: /readability/:prev_desc
+ * displays the readability index  from preview description
+ * @author Saumya
+ * @param prev_desc Preview desrciption as an arguement
+ * @return  result
 
-     */
-    public Result readability(String prev_desc) throws JsonGenerationException, JsonMappingException{
-        HashMap<String,Float> fdata = freelancer.getReadabilityIndex(prev_desc);
-        return ok(views.html.readability.render(fdata));
+ */
+   public Result readability(String prev_desc) throws JsonGenerationException, JsonMappingException{
+        // HashMap<String,Float> fdata = freelancer.getReadabilityIndex(prev_desc);
+        // return ok(views.html.readability.render(fdata));
+    return FutureConverters.toJava(ask(readabilityActor, prev_desc, Integer. MAX_VALUE))
+                .thenApply(response -> {
+                        HashMap<String,Float> resultmap = null;
+                        try{
+                            System.out.println(response);
+                            resultmap = (HashMap<String,Float>) response;
+                        }catch(Exception e){
+                            return ok("Internal Server Error");
+                        }
+                        return ok(views.html.index.render(resultmap));
+                });
     }
 }
